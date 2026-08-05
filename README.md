@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI OnRamp
 
-## Getting Started
+AI OnRamp is a hands-on learning app that teaches AI fundamentals in short, interactive lessons. It is the Week 4 (Phase 2, Project 1) submission for the Cursor Boston x Hult cohort, built against the Ludwitt/Hult learning-app API.
 
-First, run the development server:
+**Production URL:** https://ai-onramp-hult.vercel.app
+**Ludwitt/Hult app ID:** `78f5ecd3-4f57-4f7b-9671-0477a1b49f9e`
+
+## What's inside
+
+- **5 modules / 10 lessons** with in-lesson quizzes and instant feedback:
+  - Understanding AI (`what-is-ai`, `ml-down-the-stack`)
+  - How AI works (`training-and-data`, `neural-networks`, `generative-ai`)
+  - Applying AI (`pick-the-right-tool`, `prompting`)
+  - AI and the work (`pair-programming`, `agents-and-context`)
+  - Ethics (`bias-and-fairness`, `privacy-and-safety`)
+- **JWT launch flow** — users arrive via a signed launch token from the Ludwitt/Hult API (`/launch?token=...`), which is verified server-side and exchanged for a 24h HttpOnly session cookie.
+- **Events instrumentation** — `lesson_started`, `lesson_completed`, `quiz_submitted`, and a 60s `session_heartbeat` are forwarded to the Ludwitt/Hult events API (`/api/events` -> `POST /v1/apps/{app_id}/events`).
+- **Session-gated pages** — `/dashboard` and `/learn/...` require a valid session; `/launch` validates and redirects.
+
+## Tech stack
+
+- Next.js 16 (App Router) + TypeScript (strict) + React 19 + Tailwind CSS v4
+- `jose` for JWT verification/signing (launch token + session cookie)
+- Deployed on Vercel (Node.js runtime, `force-dynamic` routes for the session-gated pages)
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.local.example .env.local   # fill in the values below
+npm run dev                        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Env var | Purpose |
+|---|---|
+| `LUDWITT_API_URL` | Base URL of the Ludwitt/Hult API, e.g. `https://ludwitt-api.vercel.app/v1` |
+| `LUDWITT_API_KEY` | API key used to authenticate event posts to the Ludwitt/Hult API |
+| `LUDWITT_JWT_SECRET` | Secret used to verify the launch-token JWT issued by the API |
+| `JWT_SECRET` | Fallback secret for launch-token verification |
+| `SESSION_SECRET` | Secret used to sign the app's own session cookie |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Verification
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint       # 0 errors
+npx tsc --noEmit   # 0 errors
+npm run build      # production build passes
+```
 
-## Learn More
+## Architecture notes
 
-To learn more about Next.js, take a look at the following resources:
+- `app/launch/route.ts` — verifies the launch token and sets the session cookie.
+- `lib/session.ts` — JWT verify/sign helpers and cookie name.
+- `lib/events.ts` — posts events to the Ludwitt/Hult events API with `user_id` and `session_id`.
+- `app/api/events/route.ts` — server-side event proxy that requires a valid session.
+- `components/EventTracker.tsx` — client component that fires events (mount, interval).
+- `lib/content.ts` — all course content (modules, lessons, quizzes).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Known limitations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Limitation | Context |
+|---|---|
+| Session user identity comes only from the launch token | There is no separate sign-up flow; the API issues launch tokens |
+| `session_id` is generated per event, not per session | Metrics are user-based, so this does not affect counting |
+| Content is static in `lib/content.ts` | No CMS or admin editing surface |
+| No automated E2E tests | QA relies on the build/lint/typecheck pipeline plus manual launch-flow checks |
+| Heartbeat events are excluded from qualifying metrics | Matches the Ludwitt/Hult API's qualifying-event definition |
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Pushes to `main` auto-deploy via Vercel. The production URL is aliased to `ai-onramp-hult.vercel.app`.

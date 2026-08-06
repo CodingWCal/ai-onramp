@@ -109,10 +109,12 @@ export function Quiz({ lessonSlug, moduleSlug, quiz }: Props) {
         </div>
       )}
 
-      <EventTracker
-        event={submitted ? "quiz_submitted" : "lesson_started"}
-        properties={{ lesson: lessonSlug, module: moduleSlug, score: submitted ? score : null }}
-      />
+      {submitted && (
+        <EventTracker
+          event="quiz_submitted"
+          properties={{ lesson: lessonSlug, module: moduleSlug, score }}
+        />
+      )}
     </div>
   );
 }

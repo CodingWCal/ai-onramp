@@ -42,7 +42,10 @@ export function Quiz({ lessonSlug, moduleSlug, quiz }: Props) {
                   let cls =
                     "w-full text-left rounded-lg border border-border bg-surface-2 px-4 py-3 text-sm transition";
                   if (!submitted) {
-                    cls += chosen === oi ? " border-accent" : " hover:border-accent/50";
+                    cls +=
+                      chosen === oi
+                        ? " border-accent bg-accent/10 ring-1 ring-accent/50"
+                        : " hover:border-accent/50";
                   } else if (oi === q.answer) {
                     cls = "w-full text-left rounded-lg border border-emerald-500/70 bg-emerald-500/10 px-4 py-3 text-sm";
                   } else if (chosen === oi) {
@@ -58,6 +61,18 @@ export function Quiz({ lessonSlug, moduleSlug, quiz }: Props) {
                       }
                       className={cls}
                     >
+                      {!submitted && (
+                        <span
+                          aria-hidden
+                          className={`mr-2 inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[10px] leading-none ${
+                            chosen === oi
+                              ? "border-accent bg-accent font-semibold text-background"
+                              : "border-border"
+                          }`}
+                        >
+                          {chosen === oi ? "✓" : ""}
+                        </span>
+                      )}
                       {opt}
                     </button>
                   );

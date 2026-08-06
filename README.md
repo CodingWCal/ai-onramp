@@ -7,7 +7,7 @@ AI OnRamp is a hands-on learning app that teaches AI fundamentals in short, inte
 
 ## What's inside
 
-- **5 modules / 14 lessons** with in-lesson quizzes, code samples, and instant feedback:
+- **5 modules / 16 lessons** with in-lesson quizzes, code samples, and instant feedback:
   - Understanding AI (`what-is-ai`, `ml-down-the-stack`, `ai-in-daily-life`)
   - How AI works (`training-and-data`, `neural-networks`, `generative-ai`, `embeddings-and-search`)
   - Applying AI (`pick-the-right-tool`, `prompting`, `grounded-ai`)
